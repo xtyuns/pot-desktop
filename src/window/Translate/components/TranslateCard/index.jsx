@@ -15,7 +15,7 @@ import ResultContent from './ResultContent';
 import ServiceSelector from './ServiceSelector';
 import TranslateActions from './TranslateActions';
 
-export default function TargetArea(props) {
+export default function TranslateCard(props) {
     const { index, name, translateServiceInstanceList, pluginList, serviceInstanceConfigMap, ...drag } = props;
 
     const [currentServiceKey, setCurrentServiceKey] = React.useState(name);

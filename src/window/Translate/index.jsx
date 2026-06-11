@@ -11,7 +11,7 @@ import { BsPinFill } from 'react-icons/bs';
 
 import LanguageArea from './components/LanguageArea';
 import SourceArea from './components/SourceArea';
-import TargetArea from './components/TargetArea';
+import TranslateCard from './components/TranslateCard';
 import { osType } from '../../utils/env';
 import { useConfig } from '../../hooks';
 import { store } from '../../utils/store';
@@ -315,7 +315,7 @@ export default function Translate() {
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
                                                             >
-                                                                <TargetArea
+                                                                <TranslateCard
                                                                     {...provided.dragHandleProps}
                                                                     index={index}
                                                                     name={serviceInstanceKey}
