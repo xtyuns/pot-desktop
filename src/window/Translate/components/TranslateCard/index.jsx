@@ -58,6 +58,13 @@ export default function TranslateCard(props) {
         if (error) logError(`[${currentServiceKey}] error: ${error}`);
     }, [error, currentServiceKey]);
 
+    // Auto-expand card when translation result arrives
+    useEffect(() => {
+        if (result !== '' || error !== '') {
+            setHide(false);
+        }
+    }, [result, error]);
+
     useEffect(() => {
         if (sourceText.trim() && sourceLanguage && targetLanguage &&
             autoCopy !== null && hideWindow !== null && clipboardMonitor !== null) {
@@ -90,6 +97,7 @@ export default function TranslateCard(props) {
                 isLoading={isLoading}
                 hide={hide}
                 onToggleHide={() => setHide(!hide)}
+                dragProps={drag}
             />
 
             <animated.div style={{ ...springs }}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
+import { CardHeader, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import { BiCollapseVertical, BiExpandVertical } from 'react-icons/bi';
 import PulseLoader from 'react-spinners/PulseLoader';
 import { semanticColors } from '@nextui-org/theme';
@@ -28,12 +28,17 @@ export default function ServiceSelector({
     currentKey, onChange,
     instanceList, pluginList, serviceInstanceConfigMap, t,
     isLoading,
-    hide, onToggleHide,
+    hide, onToggleHide, dragProps,
 }) {
     const theme = useTheme();
 
     return (
-        <div className='flex justify-between py-1 px-0 bg-content2 h-[30px] rounded-t-[10px]'>
+        <CardHeader
+            className={`flex justify-between py-1 px-0 bg-content2 h-[30px] ${
+                hide ? 'rounded-[10px]' : 'rounded-t-[10px]'
+            }`}
+            {...dragProps}
+        >
             <div className='flex'>
                 <Dropdown>
                     <DropdownTrigger>
@@ -73,6 +78,6 @@ export default function ServiceSelector({
             >
                 {hide ? <BiExpandVertical className='text-[16px]' /> : <BiCollapseVertical className='text-[16px]' />}
             </Button>
-        </div>
+        </CardHeader>
     );
 }

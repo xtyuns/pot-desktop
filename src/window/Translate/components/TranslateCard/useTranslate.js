@@ -21,14 +21,16 @@ async function callTranslate({
     if (whetherPluginService(serviceInstanceKey)) {
         const pluginInfo = pluginList['translate'][translateServiceName];
         const instanceConfig = serviceInstanceConfigMap[serviceInstanceKey];
+        info(`[callTranslate] plugin: ${translateServiceName}`);
         let [func, utils] = await invoke_plugin('translate', translateServiceName);
         return func(text, pluginInfo.language[sourceLang], pluginInfo.language[targetLang], {
             config: { ...instanceConfig, enable: 'true' },
             detect: detectLanguage, setResult: onResult, utils,
         });
     } else {
-        const LanguageEnum = builtinServices[translateServiceName].Language;
+        const LanguageEnum = builtinServices[translateServiceName]?.Language;
         const instanceConfig = serviceInstanceConfigMap[serviceInstanceKey];
+        info(`[callTranslate] builtin: ${translateServiceName}, lang=${sourceLang}->${targetLang}`);
         return builtinServices[translateServiceName].translate(
             text, LanguageEnum[sourceLang], LanguageEnum[targetLang],
             { config: instanceConfig, detect: detectLanguage, setResult: onResult }
@@ -85,11 +87,12 @@ export default function useTranslate({
 
         setIsLoading(true);
         setError('');
-
-        // Auto-copy source (before translating, for 'source' mode)
-        autoCopySource(text);
+        info(`[translate] call: service=${serviceName}, src=${sourceLanguage}, tgt=${targetLang}`);
 
         try {
+            // Auto-copy source (before translating, for 'source' mode)
+            autoCopySource(text);
+
             const v = await callTranslate({
                 text, sourceLanguage, targetLanguage: targetLang, detectLanguage,
                 serviceInstanceKey, serviceInstanceConfigMap, pluginList,
@@ -155,6 +158,8 @@ export default function useTranslate({
 
         setIsLoading(true);
         setError('');
+
+        info(`[translate] start: service=${serviceName}, source=${sourceLanguage}, target=${targetLang}, text="${text.slice(0, 50)}"`);
 
         try {
             const v = await callTranslate({
