@@ -1,5 +1,6 @@
 import { Card, CardBody, CardFooter } from '@nextui-org/react';
 import React, { useEffect, useRef } from 'react';
+import { writeText } from '@tauri-apps/api/clipboard';
 import { useTranslation } from 'react-i18next';
 import { useAtomValue } from 'jotai';
 import { useSpring, animated } from '@react-spring/web';
