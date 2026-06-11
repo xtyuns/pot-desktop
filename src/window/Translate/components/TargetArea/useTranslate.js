@@ -1,27 +1,21 @@
 import { useCallback, useRef, useState } from 'react';
 import { info } from 'tauri-plugin-log-api';
-import { nanoid } from 'nanoid';
 import { getServiceName, whetherPluginService } from '../../../../utils/service_instance';
 import { invoke_plugin } from '../../../../utils/invoke_plugin';
 import * as builtinServices from '../../../../services/translate';
+import useAutoCopy from './useAutoCopy';
+import useHistory from './useHistory';
 
 /** Shared translate logic used by both forward-translate and translate-back. */
 async function callTranslate({
-    text,
-    sourceLanguage,
-    targetLanguage,
-    detectLanguage,
-    serviceInstanceKey,
-    serviceInstanceConfigMap,
-    pluginList,
-    onResult,
-    onError,
+    text, sourceLanguage, targetLanguage, detectLanguage,
+    serviceInstanceKey, serviceInstanceConfigMap, pluginList, onResult,
 }) {
     const translateServiceName = getServiceName(serviceInstanceKey);
     const sourceLang = sourceLanguage;
     let targetLang = targetLanguage;
     if (sourceLang === 'auto' && targetLang === detectLanguage) {
-        targetLang = detectLanguage; // handled by caller
+        targetLang = detectLanguage;
     }
 
     if (whetherPluginService(serviceInstanceKey)) {
@@ -30,47 +24,35 @@ async function callTranslate({
         let [func, utils] = await invoke_plugin('translate', translateServiceName);
         return func(text, pluginInfo.language[sourceLang], pluginInfo.language[targetLang], {
             config: { ...instanceConfig, enable: 'true' },
-            detect: detectLanguage,
-            setResult: onResult,
-            utils,
+            detect: detectLanguage, setResult: onResult, utils,
         });
     } else {
         const LanguageEnum = builtinServices[translateServiceName].Language;
         const instanceConfig = serviceInstanceConfigMap[serviceInstanceKey];
         return builtinServices[translateServiceName].translate(
-            text,
-            LanguageEnum[sourceLang],
-            LanguageEnum[targetLang],
+            text, LanguageEnum[sourceLang], LanguageEnum[targetLang],
             { config: instanceConfig, detect: detectLanguage, setResult: onResult }
         );
     }
 }
 
 /**
- * Manages a single translation card's state: loading, result, error.
- * Handles stale-request guards via incrementing ID.
+ * Manages a single translation card: loading/result/error state,
+ * translate / translate-back, auto-copy, and history persistence.
  */
 export default function useTranslate({
-    index,
-    sourceText,
-    sourceLanguage,
-    targetLanguage,
-    detectLanguage,
-    serviceInstanceConfigMap,
-    pluginList,
-    historyDisable,
-    autoCopy,
-    hideWindow,
-    clipboardMonitor,
-    translateSecondLanguage,
-    addToHistory,
-    writeText,
+    index, sourceText, sourceLanguage, targetLanguage, detectLanguage,
+    serviceInstanceConfigMap, pluginList,
+    historyDisable, autoCopy, hideWindow, clipboardMonitor, translateSecondLanguage,
     t,
 }) {
     const idRef = useRef(0);
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState('');
     const [error, setError] = useState('');
+
+    const addToHistory = useHistory();
+    const { autoCopySource, autoCopyResult } = useAutoCopy({ autoCopy, hideWindow, clipboardMonitor, t });
 
     const translate = useCallback(async (serviceInstanceKey) => {
         const id = ++idRef.current;
@@ -104,15 +86,13 @@ export default function useTranslate({
         setIsLoading(true);
         setError('');
 
+        // Auto-copy source (before translating, for 'source' mode)
+        autoCopySource(text);
+
         try {
             const v = await callTranslate({
-                text,
-                sourceLanguage,
-                targetLanguage: targetLang,
-                detectLanguage,
-                serviceInstanceKey,
-                serviceInstanceConfigMap,
-                pluginList,
+                text, sourceLanguage, targetLanguage: targetLang, detectLanguage,
+                serviceInstanceKey, serviceInstanceConfigMap, pluginList,
                 onResult: (partial) => {
                     if (idRef.current !== id) return;
                     setResult(partial);
@@ -127,19 +107,9 @@ export default function useTranslate({
                 addToHistory(text, detectLanguage, targetLang, serviceName, clean);
             }
 
-            // Auto-copy on the first card only
-            if (index === 0 && autoCopy !== 'disable' && !clipboardMonitor) {
-                const copyText =
-                    autoCopy === 'source_target'
-                        ? text + '\n\n' + clean
-                        : clean;
-                try {
-                    await writeText(copyText);
-                    if (hideWindow) {
-                        const { sendNotification } = await import('@tauri-apps/api/notification');
-                        sendNotification({ title: t('common.write_clipboard'), body: copyText });
-                    }
-                } catch { /* clipboard write failed — ignore */ }
+            // Auto-copy result (for 'target' / 'source_target' modes)
+            if (index === 0) {
+                autoCopyResult(text, clean);
             }
         } catch (e) {
             if (idRef.current !== id) return;
@@ -153,7 +123,7 @@ export default function useTranslate({
     }, [sourceText, sourceLanguage, targetLanguage, detectLanguage,
         serviceInstanceConfigMap, pluginList, historyDisable,
         autoCopy, hideWindow, clipboardMonitor, translateSecondLanguage,
-        addToHistory, writeText, t, index]);
+        t, index, autoCopySource, autoCopyResult, addToHistory]);
 
     const translateBack = useCallback(async (resultText, serviceInstanceKey) => {
         const id = ++idRef.current;
@@ -192,9 +162,7 @@ export default function useTranslate({
                 sourceLanguage: newSourceLanguage,
                 targetLanguage: newTargetLanguage,
                 detectLanguage: newSourceLanguage,
-                serviceInstanceKey,
-                serviceInstanceConfigMap,
-                pluginList,
+                serviceInstanceKey, serviceInstanceConfigMap, pluginList,
                 onResult: (partial) => {
                     if (idRef.current !== id) return;
                     setResult(partial);

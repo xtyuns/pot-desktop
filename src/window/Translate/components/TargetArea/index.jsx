@@ -1,9 +1,6 @@
 import { Card, CardBody, CardFooter } from '@nextui-org/react';
-import { sendNotification } from '@tauri-apps/api/notification';
 import React, { useEffect, useRef } from 'react';
-import { writeText } from '@tauri-apps/api/clipboard';
 import { useTranslation } from 'react-i18next';
-import Database from 'tauri-plugin-sql-api';
 import { useAtomValue } from 'jotai';
 import { useSpring, animated } from '@react-spring/web';
 import useMeasure from 'react-use-measure';
@@ -43,28 +40,6 @@ export default function TargetArea(props) {
     const toastStyle = useToastStyle();
     const speak = useVoice();
 
-    // ── History ──────────────────────────────────────────────────────────
-
-    const addToHistory = async (text, source, target, service, resultText) => {
-        const db = await Database.load('sqlite:history.db');
-        try {
-            await db.execute(
-                'INSERT into history (text, source, target, service, result, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
-                [text, source, target, service, resultText, Date.now()]
-            );
-        } catch {
-            await db.execute(
-                'CREATE TABLE history(id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL, source TEXT NOT NULL, target TEXT NOT NULL, service TEXT NOT NULL, result TEXT NOT NULL, timestamp INTEGER NOT NULL)'
-            );
-            await db.execute(
-                'INSERT into history (text, source, target, service, result, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
-                [text, source, target, service, resultText, Date.now()]
-            );
-        } finally {
-            db.close();
-        }
-    };
-
     // ── Translate ─────────────────────────────────────────────────────────
 
     const {
@@ -75,7 +50,7 @@ export default function TargetArea(props) {
         index, sourceText, sourceLanguage, targetLanguage, detectLanguage,
         serviceInstanceConfigMap, pluginList,
         historyDisable, autoCopy, hideWindow, clipboardMonitor, translateSecondLanguage,
-        addToHistory, writeText, t,
+        t,
     });
 
     useEffect(() => {
@@ -85,11 +60,6 @@ export default function TargetArea(props) {
     useEffect(() => {
         if (sourceText.trim() && sourceLanguage && targetLanguage &&
             autoCopy !== null && hideWindow !== null && clipboardMonitor !== null) {
-            if (autoCopy === 'source' && !clipboardMonitor) {
-                writeText(sourceText).then(() => {
-                    if (hideWindow) sendNotification({ title: t('common.write_clipboard'), body: sourceText });
-                });
-            }
             translate(currentServiceKey);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
