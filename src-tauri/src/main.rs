@@ -25,6 +25,7 @@ use log::info;
 use once_cell::sync::OnceCell;
 use screenshot::screenshot;
 use server::*;
+use std::sync::atomic::AtomicBool;
 use std::sync::Mutex;
 use system_ocr::*;
 use tauri::api::notification::Notification;
@@ -121,9 +122,7 @@ fn main() {
                     false
                 }
             };
-            app.manage(ClipboardMonitorEnableWrapper(Mutex::new(
-                clipboard_monitor.to_string(),
-            )));
+            app.manage(ClipboardMonitorEnableWrapper(AtomicBool::new(clipboard_monitor)));
             start_clipboard_monitor(app.handle());
             Ok(())
         })
