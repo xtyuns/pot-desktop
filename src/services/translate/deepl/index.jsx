@@ -1,4 +1,5 @@
 import { fetch, Body } from '@tauri-apps/api/http';
+import { info } from 'tauri-plugin-log-api';
 
 export async function translate(text, from, to, options = {}) {
     const { config } = options;
@@ -16,20 +17,22 @@ export async function translate(text, from, to, options = {}) {
 }
 
 async function translate_by_free(text, from, to) {
-    // oneshot-free API uses lowercase codes: de, en, en-GB, en-US, es, fr, it, ja, ko, pt, pt-BR, pt-PT, zh, zh-Hans
+    // oneshot-free API uses lowercase codes
     const langMap = {
-        auto: 'auto', ZH: 'zh-Hans', JA: 'ja', EN: 'en',
-        KO: 'ko', FR: 'fr', ES: 'es', DE: 'de', IT: 'it',
-        'PT-PT': 'pt-PT', 'PT-BR': 'pt-BR',
+        'ZH-HANS': 'zh-Hans',
+        'ZH-HANT': 'zh-Hant',
     };
+    from = langMap[from] || from.toLowerCase();
+    to = langMap[to] || to.toLowerCase();
 
+    info(`[Deepl Free] Translating from ${from} to ${to}, text: ${text}`);
     const res = await fetch('https://oneshot-free.www.deepl.com/v1/storefront/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: Body.json({
             text: [text],
-            source_lang: langMap[from] || from,
-            target_lang: langMap[to] || to,
+            source_lang: from,
+            target_lang: to,
             language_model: 'next-gen',
             usage_type: 'Translate',
         }),
