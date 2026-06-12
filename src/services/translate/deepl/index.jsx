@@ -1,5 +1,4 @@
 import { fetch, Body } from '@tauri-apps/api/http';
-import { info } from 'tauri-plugin-log-api';
 
 export async function translate(text, from, to, options = {}) {
     const { config } = options;
@@ -25,7 +24,6 @@ async function translate_by_free(text, from, to) {
     from = langMap[from] || from.toLowerCase();
     to = langMap[to] || to.toLowerCase();
 
-    info(`[Deepl Free] Translating from ${from} to ${to}, text: ${text}`);
     const res = await fetch('https://oneshot-free.www.deepl.com/v1/storefront/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -4,14 +4,10 @@ import { HiOutlineVolumeUp } from 'react-icons/hi';
 
 function PronunciationView({ pronunciations, speak, fontSize }) {
     if (!pronunciations?.length) return null;
-    return pronunciations.map((p) => (
-        <div key={nanoid()}>
-            {p.region && (
-                <span className={`text-[${fontSize}px] mr-[12px] text-default-500`}>{p.region}</span>
-            )}
-            {p.symbol && (
-                <span className={`text-[${fontSize}px] mr-[12px] text-default-500`}>{p.symbol}</span>
-            )}
+    return pronunciations.map((p, i) => (
+        <div key={p.region ?? p.symbol ?? i}>
+            {p.region && <span className={`text-[${fontSize}px] mr-[12px] text-default-500`}>{p.region}</span>}
+            {p.symbol && <span className={`text-[${fontSize}px] mr-[12px] text-default-500`}>{p.symbol}</span>}
             {p.voice && (
                 <HiOutlineVolumeUp
                     className={`text-[${fontSize}px] inline-block my-auto cursor-pointer`}
@@ -30,16 +26,12 @@ function ExplanationsView({ explanations, fontSize }) {
                 <span key={nanoid()}>
                     {i === 0 ? (
                         <>
-                            <span className={`text-[${fontSize - 2}px] text-default-500 mr-[12px]`}>
-                                {group.trait}
-                            </span>
+                            <span className={`text-[${fontSize - 2}px] text-default-500 mr-[12px]`}>{group.trait}</span>
                             <span className={`font-bold text-[${fontSize}px] select-text`}>{explain}</span>
                             <br />
                         </>
                     ) : (
-                        <span className={`text-[${fontSize - 2}px] text-default-500 select-text mr-1`}>
-                            {explain}
-                        </span>
+                        <span className={`text-[${fontSize - 2}px] text-default-500 select-text mr-1`}>{explain}</span>
                     )}
                 </span>
             ))}
@@ -100,16 +92,32 @@ export default function ResultContent({ result, error, appFontSize, speak, textA
                 />
             ) : (
                 <div>
-                    <PronunciationView pronunciations={result['pronunciations']} speak={speak} fontSize={appFontSize} />
-                    <ExplanationsView explanations={result['explanations']} fontSize={appFontSize} />
+                    <PronunciationView
+                        pronunciations={result['pronunciations']}
+                        speak={speak}
+                        fontSize={appFontSize}
+                    />
+                    <ExplanationsView
+                        explanations={result['explanations']}
+                        fontSize={appFontSize}
+                    />
                     <br />
-                    <AssociationsView associations={result['associations']} fontSize={appFontSize} />
-                    <SentencesView sentences={result['sentence']} fontSize={appFontSize} />
+                    <AssociationsView
+                        associations={result['associations']}
+                        fontSize={appFontSize}
+                    />
+                    <SentencesView
+                        sentences={result['sentence']}
+                        fontSize={appFontSize}
+                    />
                 </div>
             )}
             {error !== '' &&
                 error.split('\n').map((v) => (
-                    <p key={v} className={`text-[${appFontSize}px] text-red-500`}>
+                    <p
+                        key={v}
+                        className={`text-[${appFontSize}px] text-red-500`}
+                    >
                         {v}
                     </p>
                 ))}

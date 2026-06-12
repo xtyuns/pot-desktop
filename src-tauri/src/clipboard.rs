@@ -29,7 +29,6 @@ mod platform {
             WM_CLIPBOARDUPDATE => {
                 if let Some(app) = APP.get() {
                     if let Ok(Some(text)) = app.clipboard_manager().read_text() {
-                        log::info!("[clipboard] translate: {}", text);
                         text_translate(text);
                     }
                 }
@@ -153,7 +152,6 @@ mod platform {
                     if text != previous_text {
                         idle_iterations = 0;
                         previous_text = text.clone();
-                        log::info!("[clipboard] translate: {}", text);
                         text_translate(text);
                         continue;
                     }
