@@ -66,17 +66,24 @@ mod platform {
                 // Mutable null-terminated class name for PSTR compat
                 let mut class_name = *b"PotClipMonWnd\0";
                 let class_name_pstr = PSTR(class_name.as_mut_ptr());
+                let class_name_pcstr = PCSTR(class_name_pstr.0.cast());
 
                 let wc = WNDCLASSA {
                     style: WNDCLASS_STYLES(CS_HREDRAW.0 | CS_VREDRAW.0),
                     lpfnWndProc: Some(wndproc),
                     hInstance: HINSTANCE(instance.0),
-                    lpszClassName: PCSTR(class_name_pstr.0.cast()),
+                    lpszClassName: class_name_pcstr,
                     ..Default::default()
                 };
 
-                if RegisterClassA(&wc) == 0 {
-                    return;
+                // Register class; ignore ALREADY_EXISTS when restarting monitor
+                let registered = RegisterClassA(&wc);
+                if registered == 0 {
+                    let err = GetLastError();
+                    if err.0 != ERROR_CLASS_ALREADY_EXISTS.0 {
+                        log::error!("[clipboard] RegisterClassA failed: {:?}", err);
+                        return;
+                    }
                 }
 
                 let hwnd = match CreateWindowExA(
