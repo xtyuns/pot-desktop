@@ -98,8 +98,10 @@ async function compilePlugin(pluginType, pluginName) {
 
     const sandbox = createSandbox();
     const wrapper = `with (__sandbox__) { ${script};\nreturn ${pluginType}; }`;
-    const fn = new Function('pluginType', 'utils', '__sandbox__', wrapper)
-        .bind(null, pluginType, utils, sandbox);
+    const factory = new Function('utils', '__sandbox__', wrapper);
+    const fn = factory(utils, sandbox);
+    if (typeof fn !== 'function') {
+        throw new Error(`Plugin entry "${pluginType}" is not a function`);
+    }
 
     return { fn, utils };
-}
