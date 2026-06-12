@@ -159,7 +159,7 @@ export default function useTranslate({
         setIsLoading(true);
         setError('');
 
-        info(`[translate] start: service=${serviceName}, source=${sourceLanguage}, target=${targetLang}, text="${text.slice(0, 50)}"`);
+        info(`[translate] start: service=${serviceName}, source=${newSourceLanguage}, target=${newTargetLanguage}, text="${resultText.slice(0, 50)}"`);
 
         try {
             const v = await callTranslate({
