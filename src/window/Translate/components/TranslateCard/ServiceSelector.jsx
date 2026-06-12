@@ -33,12 +33,12 @@ export default function ServiceSelector({
     const theme = useTheme();
 
     return (
-        <CardHeader
-            className={`flex justify-between py-1 px-0 bg-content2 h-[30px] ${
-                hide ? 'rounded-[10px]' : 'rounded-t-[10px]'
-            }`}
-            {...dragProps}
-        >
+        <div {...dragProps}>
+            <CardHeader
+                className={`flex justify-between py-1 px-0 bg-content2 h-[30px] ${
+                    hide ? 'rounded-[10px]' : 'rounded-t-[10px]'
+                }`}
+            >
             <div className='flex'>
                 <Dropdown>
                     <DropdownTrigger>
@@ -78,6 +78,7 @@ export default function ServiceSelector({
             >
                 {hide ? <BiExpandVertical className='text-[16px]' /> : <BiCollapseVertical className='text-[16px]' />}
             </Button>
-        </CardHeader>
+            </CardHeader>
+        </div>
     );
 }
