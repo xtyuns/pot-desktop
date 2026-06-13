@@ -3,6 +3,7 @@ on:
     push:
         branches: [master]
         tags-ignore: [updater]
+    workflow_dispatch:
 permissions: write-all
 
 jobs:
