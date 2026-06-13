@@ -105,3 +105,4 @@ async function compilePlugin(pluginType, pluginName) {
     }
 
     return { fn, utils };
+}
